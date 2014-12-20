@@ -2,11 +2,12 @@ var util = require('util');
 
 var BLEFirmata = require('ble-firmata');
 
-BlendMicroIO = function() {
+BlendMicroIO = function(opts) {
   // call super constructor
   BLEFirmata.call(this);
 
-  this.name = "BlendMicro";
+  this.opts = opts || {};
+  this.name = this.opts.name || "BlendMicro";
   this.port = "BLE";
 
   this.START_SYSEX = 0xF0;
