@@ -12,4 +12,21 @@ npm install
 node test.js
 ```
 
+---
+
+example use within root dir of this repo:
+
+```javascript
+var five = require('johnny-five');
+var blendMicroIO = require('./');
+
+var board = new five.Board({
+  io: new blendMicroIO()
+});
+
+board.on('ready', function() {
+  // do johnny five stuff
+});
+```
+
 Thank you to [Alex Potsides](https://github.com/achingbrain/node-ioboard) for the johnny-five IO template.
