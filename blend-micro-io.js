@@ -1,5 +1,4 @@
 var util = require('util');
-
 var BLEFirmata = require('ble-firmata');
 
 BlendMicroIO = function(opts) {
@@ -67,24 +66,25 @@ util.inherits(BlendMicroIO, BLEFirmata);
 
 
 BlendMicroIO.prototype.sendI2CConfig = function(delay, callback) {
-  delay = delay || 0;
-  return this.write(new Buffer([this.START_SYSEX, this.I2C_CONFIG, (delay & 0xFF), ((delay >> 8) & 0xFF), this.END_SYSEX]));
+  var data, write_data;
+  if (delay == null) {
+    delay = 0;
+  }
+  data = [delay, delay >> 8];
+  data = data.map(function(i) {
+    return i & 0xff;
+  });
+  write_data = [this.START_SYSEX, this.I2C_CONFIG].concat(data, [this.END_SYSEX]);
+  return this.write(write_data, callback);
 };
 
 BlendMicroIO.prototype.sendI2CWriteRequest = function(slaveAddress, bytes, callback) {
-  var data = [];
-  var bytes = bytes || [];
-  data.push(this.START_SYSEX);
-  data.push(this.I2C_REQUEST);
-  data.push(slaveAddress);
-  data.push(this.I2C_MODES.WRITE << 3);
-  for (var i = 0, length = bytes.length; i < length; i++) {
-   data.push(bytes[i] & 0x7F);
-   data.push((bytes[i] >> 7) & 0x7F);
-  }
-  data.push(this.END_SYSEX);
-
-  return this.write(new Buffer(data));
+  var data;
+  data = [slaveAddress, this.I2C_MODES.WRITE << 3];
+  bytes.map(function(i) {
+    return data.push(i, i >> 7);
+  });
+  return this.sysex(this.I2C_REQUEST, data, callback);
 };
 
 module.exports = BlendMicroIO;
