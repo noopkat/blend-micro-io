@@ -6,6 +6,8 @@ Currently a WIP, and testing with a BlendMicro and an OLED display.
 
 If you dare:
 
+Upload [patched StandardFirmata v2.3](https://github.com/shokai/node-ble-firmata/tree/master/firmware/BLEFirmataSketch) to your Blend Micro
+
 ```
 git clone https://github.com/noopkat/blend-micro-io.git
 npm install
