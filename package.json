@@ -1,8 +1,8 @@
 {
   "name": "blend-micro-io",
   "version": "1.0.0",
-  "description": "blend micro board io for johnny-five",
-  "main": "blend-micro-io",
+  "description": "Blend Micro board IO plugin for Johnny Five",
+  "main": "blend-micro-io.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
