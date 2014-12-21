@@ -1,7 +1,7 @@
 var util = require('util');
 var BLEFirmata = require('ble-firmata');
 
-BlendMicroIO = function(opts) {
+var BlendMicroIO = function(opts) {
   // call super constructor
   BLEFirmata.call(this);
 
@@ -52,12 +52,14 @@ BlendMicroIO = function(opts) {
   var board = this;
 
   this.once("connect", function() {
-    console.log('ble connect');
 
     board.emit("connected");
-
     board.emit("ready");
 
+  });
+
+  process.on('SIGINT', function() {
+    board.close();
   });
 
 }
@@ -86,5 +88,6 @@ BlendMicroIO.prototype.sendI2CWriteRequest = function(slaveAddress, bytes, callb
   });
   return this.sysex(this.I2C_REQUEST, data, callback);
 };
+
 
 module.exports = BlendMicroIO;
