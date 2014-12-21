@@ -8,15 +8,12 @@
   },
   "keywords": [
     "blendmicro",
-    "johnny-five"
+    "johnny-five",
+    "ble"
   ],
   "author": "Suz Hinton",
   "license": "MIT",
   "dependencies": {
-    "ble-firmata": "^0.1.2",
-    "johnny-five": "^0.8.20",
-    "oled-font-5x7": "^1.0.0",
-    "oled-js": "^2.1.0",
-    "png-to-lcd": "^1.0.2"
+    "ble-firmata": "^0.1.2"
   }
 }
