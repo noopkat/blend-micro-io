@@ -11,7 +11,6 @@ Upload [patched StandardFirmata v2.3](https://github.com/shokai/node-ble-firmata
 ```
 git clone https://github.com/noopkat/blend-micro-io.git
 npm install
-node test.js
 ```
 
 ---
