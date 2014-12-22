@@ -94,7 +94,6 @@ BlendMicroIO.prototype.sendI2CReadRequest = function(slaveAddress, numBytes, cal
   var data;
   data = [this.START_SYSEX, this.I2C_REQUEST, slaveAddress, this.I2C_MODES.READ << 3, numBytes & 0x7F, (numBytes >> 7) & 0x7F, this.END_SYSEX];
   this.once('I2C-reply-' + slaveAddress + '-0', function(reply) {
-    console.log('i2c reply event found', reply)
     return callback(reply);
   });
   return this.write(data);
@@ -129,7 +128,6 @@ BlendMicroIO.prototype.process_input = function(input_data) {
         data: sysex_data
       });
     } else {
-      console.log(input_data);
       this.stored_input_data[this.sysex_bytes_read] = input_data;
       return this.sysex_bytes_read += 1;
     }
