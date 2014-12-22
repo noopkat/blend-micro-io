@@ -67,7 +67,7 @@ var BlendMicroIO = function(opts) {
 
 util.inherits(BlendMicroIO, BLEFirmata);
 
-// two methods below patch missing I2C methods (except readI2CRequest)
+// all methods below patch missing I2C methods that are not in ble-firmata 
 BlendMicroIO.prototype.sendI2CConfig = function(delay, callback) {
   var data, write_data;
   if (delay == null) {
@@ -88,6 +88,109 @@ BlendMicroIO.prototype.sendI2CWriteRequest = function(slaveAddress, bytes, callb
     return data.push(i, i >> 7);
   });
   return this.sysex(this.I2C_REQUEST, data, callback);
+};
+
+BlendMicroIO.prototype.sendI2CReadRequest = function(slaveAddress, numBytes, callback) {
+  var data;
+  data = [this.START_SYSEX, this.I2C_REQUEST, slaveAddress, this.I2C_MODES.READ << 3, numBytes & 0x7F, (numBytes >> 7) & 0x7F, this.END_SYSEX];
+  this.once('I2C-reply-' + slaveAddress + '-0', function(reply) {
+    console.log('i2c reply event found', reply)
+    return callback(reply);
+  });
+  return this.write(data);
+};
+
+// parse I2C reply sysex response data and emit in correct fashion
+BlendMicroIO.prototype.notifyReadI2C = function(data) {
+  var replyBuffer, slaveAddress, register, length;
+  replyBuffer = [];
+  slaveAddress = data[0];
+  register = data[2];
+  length = data.length;
+  for (i = 4; i < length; i += 2) {
+    replyBuffer.push(data[i]);
+  }
+  return this.emit('I2C-reply-' + slaveAddress + '-' + register, replyBuffer);
+}
+
+BlendMicroIO.prototype.process_input = function(input_data) {
+  var analog_value, command, diff, i, old_analog_value, stat, sysex_command, sysex_data, _i, _results;
+  if (this.parsing_sysex) {
+    if (input_data === BLEFirmata.END_SYSEX) {
+      this.parsing_sysex = false;
+      sysex_command = this.stored_input_data[0];
+      sysex_data = this.stored_input_data.slice(1, this.sysex_bytes_read);
+      // this point is the only place where we can screen for an I2C reply, before that distinguishing byte gets stripped off.
+      if (sysex_command === this.I2C_REPLY) {
+        this.notifyReadI2C(sysex_data);
+      }
+      return this.emit('sysex', {
+        command: sysex_command,
+        data: sysex_data
+      });
+    } else {
+      console.log(input_data);
+      this.stored_input_data[this.sysex_bytes_read] = input_data;
+      return this.sysex_bytes_read += 1;
+    }
+  } else if (this.wait_for_data > 0 && input_data < 128) {
+    this.wait_for_data -= 1;
+    this.stored_input_data[this.wait_for_data] = input_data;
+    if (this.execute_multi_byte_command !== 0 && this.wait_for_data === 0) {
+      switch (this.execute_multi_byte_command) {
+        case BLEFirmata.DIGITAL_MESSAGE:
+          input_data = (this.stored_input_data[0] << 7) + this.stored_input_data[1];
+          diff = this.digital_input_data[this.multi_byte_channel] ^ input_data;
+          this.digital_input_data[this.multi_byte_channel] = input_data;
+          if (this.listeners('digitalChange').length > 0) {
+            _results = [];
+            for (i = _i = 0; _i <= 13; i = ++_i) {
+              if (((0x01 << i) & diff) > 0) {
+                stat = (input_data & diff) > 0;
+                _results.push(this.emit('digitalChange', {
+                  pin: i + this.multi_byte_channel * 8,
+                  value: stat,
+                  old_value: !stat
+                }));
+              } else {
+                _results.push(void 0);
+              }
+            }
+            return _results;
+          }
+          break;
+        case BLEFirmata.ANALOG_MESSAGE:
+          analog_value = (this.stored_input_data[0] << 7) + this.stored_input_data[1];
+          old_analog_value = this.analogRead(this.multi_byte_channel);
+          this.analog_input_data[this.multi_byte_channel] = analog_value;
+          if (old_analog_value !== analog_value) {
+            return this.emit('analogChange', {
+              pin: this.multi_byte_channel,
+              value: analog_value,
+              old_value: old_analog_value
+            });
+          }
+          break;
+        case BLEFirmata.REPORT_VERSION:
+          this.boardVersion = "" + this.stored_input_data[1] + "." + this.stored_input_data[0];
+          return this.emit('boardVersion', this.boardVersion);
+      }
+    }
+  } else {
+    if (input_data < 0xF0) {
+      command = input_data & 0xF0;
+      this.multi_byte_channel = input_data & 0x0F;
+    } else {
+      command = input_data;
+    }
+    if (command === BLEFirmata.START_SYSEX) {
+      this.parsing_sysex = true;
+      return this.sysex_bytes_read = 0;
+    } else if (command === BLEFirmata.DIGITAL_MESSAGE || command === BLEFirmata.ANALOG_MESSAGE || command === BLEFirmata.REPORT_VERSION) {    
+      this.wait_for_data = 2;
+      return this.execute_multi_byte_command = command;
+    }
+  }
 };
 
 module.exports = BlendMicroIO;
