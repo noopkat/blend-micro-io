@@ -16,5 +16,13 @@
   "dependencies": {
     "ble-firmata": "^0.1.3",
     "eventemitter2": "^0.4.14"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/noopkat/blend-micro-io.git"
+  },
+  "bugs": {
+    "url": "https://github.com/noopkat/blend-micro-io/issues"
+  },
+  "homepage": "https://github.com/noopkat/blend-micro-io"
 }
