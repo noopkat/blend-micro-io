@@ -14,6 +14,6 @@
   "author": "Suz Hinton",
   "license": "MIT",
   "dependencies": {
-    "ble-firmata": "^0.1.2"
+    "ble-firmata": "^0.1.3"
   }
 }
