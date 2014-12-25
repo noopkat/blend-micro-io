@@ -68,28 +68,6 @@ var BlendMicroIO = function(opts) {
 util.inherits(BlendMicroIO, BLEFirmata);
 
 // all methods below patch missing I2C methods that are not in ble-firmata 
-BlendMicroIO.prototype.sendI2CConfig = function(delay, callback) {
-  var data, write_data;
-  if (delay == null) {
-    delay = 0;
-  }
-  data = [delay, delay >> 8];
-  data = data.map(function(i) {
-    return i & 0xff;
-  });
-  write_data = [this.START_SYSEX, this.I2C_CONFIG].concat(data, [this.END_SYSEX]);
-  return this.write(write_data, callback);
-};
-
-BlendMicroIO.prototype.sendI2CWriteRequest = function(slaveAddress, bytes, callback) {
-  var data;
-  data = [slaveAddress, this.I2C_MODES.WRITE << 3];
-  bytes.map(function(i) {
-    return data.push(i, i >> 7);
-  });
-  return this.sysex(this.I2C_REQUEST, data, callback);
-};
-
 BlendMicroIO.prototype.sendI2CReadRequest = function(slaveAddress, numBytes, callback) {
   var data;
   data = [this.START_SYSEX, this.I2C_REQUEST, slaveAddress, this.I2C_MODES.READ << 3, numBytes & 0x7F, (numBytes >> 7) & 0x7F, this.END_SYSEX];
