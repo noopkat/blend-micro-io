@@ -82,7 +82,7 @@ BlendMicroIO.prototype.sendI2CReadRequest = function(slaveAddress, numBytes, cal
 };
 
 // parse I2C reply sysex response data and emit in correct fashion
-BlendMicroIO.prototype.notifyReadI2C = function(data) {
+BlendMicroIO.prototype.notifyReadI2C = function() {
   var replyBuffer, slaveAddress, register, length;
   this.on('sysex', function(reply) {
     if (reply.command === this.I2C_REPLY) {
