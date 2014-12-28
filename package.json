@@ -1,6 +1,6 @@
 {
   "name": "blend-micro-io",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "description": "BlendMicro board IO plugin for Johnny-Five",
   "main": "blend-micro-io.js",
   "scripts": {
