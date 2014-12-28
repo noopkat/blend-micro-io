@@ -11,6 +11,13 @@ var BlendMicroIO = function(opts) {
   // totally gratuitous port
   this.port = 'BLE';
 
+  // don't make any noise
+  if (this.opts.quiet) {
+    log = function() {};
+  }
+
+  this.isReady = false;
+
   // these are needed for patched methods at bottom
   this.START_SYSEX = 0xF0;
   this.END_SYSEX = 0xF7;
@@ -55,6 +62,9 @@ var BlendMicroIO = function(opts) {
   var board = this;
 
   this.once('connect', function() {
+
+    this.isReady = true;
+
     // start filtering on sysex replies
     this.notifyReadI2C();
     
