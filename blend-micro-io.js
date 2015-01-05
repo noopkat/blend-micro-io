@@ -110,4 +110,47 @@ BlendMicroIO.prototype.notifyReadI2C = function() {
   });
 }
 
+BlendMicroIO.prototype.i2cRead = function(slaveAddress, register, numBytes, callback) {
+
+  if (arguments.length === 3 &&
+      typeof register === 'number' &&
+      typeof numBytes === 'function') {
+    callback = numBytes;
+    numBytes = register;
+    register = null;
+  }
+
+  var event = "I2C-reply-" + slaveAddress + "-";
+  var data = [
+    this.START_SYSEX,
+    this.I2C_REQUEST,
+    slaveAddress,
+    this.I2C_MODES.CONTINUOUS_READ << 3,
+  ];
+
+  if (register !== null) {
+    data.push(
+      register & 0x7F, (register >> 7) & 0x7F
+    );
+  } else {
+    register = 0;
+  }
+
+  event += register;
+
+  data.push(
+    numBytes & 0x7F, (numBytes >> 7) & 0x7F,
+    this.END_SYSEX
+  );
+
+  this.on(event, callback);
+
+  this.write(new Buffer(data));
+
+  return this;
+};
+
+BlendMicroIO.prototype.i2cConfig = BlendMicroIO.prototype.sendI2CConfig;
+BlendMicroIO.prototype.i2cWrite = BlendMicroIO.prototype.sendI2CWriteRequest;
+
 module.exports = BlendMicroIO;
