@@ -80,11 +80,7 @@ var BlendMicroIO = function(opts) {
     board.emit('ready');
 
   });
-
-  process.on('SIGINT', function() {
-    board.close();
-  });
-
+  
 }
 
 util.inherits(BlendMicroIO, BLEFirmata);
